@@ -1,0 +1,92 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Clienttcp;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author Pascal Fares
+ */
+public class ClientTCP implements Runnable {
+    
+    Socket l = null;
+    ArrayList<String> colorsData = new ArrayList<String>();
+    Random randomGenerator;
+
+    private static BufferedReader getInput(InputStream is) throws IOException {
+        return new BufferedReader(new InputStreamReader(is));
+    }
+
+    private static BufferedReader getInput(Socket p) throws IOException {
+        return new BufferedReader(new InputStreamReader(p.getInputStream()));
+    }
+
+    private static PrintWriter getoutput(Socket p) throws IOException {
+        //Avec autoflush
+        return new PrintWriter(new OutputStreamWriter(p.getOutputStream()), true);
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public ClientTCP() throws IOException, InterruptedException {
+        try {
+            randomGenerator = new Random();
+            System.out.println("INSTRUCTIONS:");
+            System.out.println("- Ecrire 'manger' pour manger");
+            System.out.println("- Ecrire 'entrainer' pour s'entrainer");
+            System.out.println("- Ecrire 'jouer' pour entrer dans le mail");
+            colorsData.add("Rouge");
+            colorsData.add("Jaune");
+            colorsData.add("Bleu");
+            l = new Socket("localhost", 2001);
+            int index = randomGenerator.nextInt(colorsData.size());
+//            System.out.println(l.getLocalSocketAddress());
+            //Input stream de la socket (depuis le serveur)
+            BufferedReader ir = getInput(l);
+            //Input stream du stdin
+            BufferedReader stdin = getInput(System.in);
+            //Output de la socket vers le serveur
+            PrintWriter envoyer = getoutput(l);
+            
+            Thread reader = new Thread(new Reader(ir));
+            Thread printer = new Thread(new Printer(stdin, envoyer, this, colorsData.get(index)));
+            printer.start();
+            reader.start();
+            reader.join();
+            printer.join();
+        } finally {
+            if (l != null) {
+                l.close();
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            try {
+                ClientTCP cl = new ClientTCP();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ClientTCP.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ClientTCP.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+}
