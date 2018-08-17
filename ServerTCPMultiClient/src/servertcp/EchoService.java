@@ -47,6 +47,10 @@ public class EchoService implements Runnable {
             System.out.println("Un Cameneon a connecter avec la couleur suivante: " + ic.getCouleur().getCouleur());
             String line;
             while (!(line = ic.getReader().readLine()).equals("exit")) {
+                 if (ic.getEtat() == Etat.Unavailable && (line.equalsIgnoreCase("entrainer") || line.equalsIgnoreCase("manger"))) {
+                     ic.getWriter().println("Tu est entraine de jouer maintenant");
+                 }
+                 else {
                  if (line.equalsIgnoreCase("manger")) {
                     System.out.print("Yamii.....");
                      try {
@@ -74,7 +78,8 @@ public class EchoService implements Runnable {
                 }
                 else {
                     
-                }
+                }                     
+              }
             }
             System.out.println("Apres boucle");
         } catch (IOException ex) {
@@ -117,9 +122,11 @@ public class EchoService implements Runnable {
                        current.setCouleur(Cameneon.Couleur.Jaune);
                        primaire.setCouleur(Cameneon.Couleur.Jaune);                        
                     }
-                    engineHelperApresMutation(current);
+                    engineHelperApresMutation(primaire, current);
                 }
                 else {
+                    current.getWriter().println("Tu as entrer en jeu avec un Cameneon de meme couleur");
+                    primaire.getWriter().println("Tu as entrer en jeu avec un Cameneon de meme couleur");
                     System.out.println("Meme couleur");
                     System.out.println("Les deux Cameneons sont de meme couleur: " + primaire.getCouleur().getCouleur());
                 }
@@ -136,10 +143,14 @@ public class EchoService implements Runnable {
     public void engineHelperAvantMutation(Cameneon primaire, Cameneon secondaire) {
         System.out.println("Le primaire a la couleur " + primaire.getCouleur().getCouleur());
         System.out.println("Le secondaire a la couleur " + secondaire.getCouleur().getCouleur());
+        primaire.getWriter().println("Tu as entrer en jeu avec un Cameneon de couleur differente");
+        secondaire.getWriter().println("Tu as entrer en jeu avec un Cameneon de couleur differente");
     }
 
-    public void engineHelperApresMutation(Cameneon a) {
+    public void engineHelperApresMutation(Cameneon a, Cameneon b) {
         System.out.println("La couleur des Cameneons apres la mutation est: " + a.getCouleur().getCouleur());
+        a.getWriter().println("La couleur apres la mutation est: " + a.getCouleur().getCouleur());
+        b.getWriter().println("La couleur apres la mutation est: " + a.getCouleur().getCouleur());
     }
 
 }
