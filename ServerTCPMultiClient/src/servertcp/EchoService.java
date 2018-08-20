@@ -1,8 +1,26 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+MIT License
+
+Copyright (c) 2018, Roy Geagea
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 package servertcp;
 
 import java.io.BufferedReader;
@@ -16,7 +34,7 @@ import servertcp.Cameneon.Etat;
 
 /**
  *
- * @author Pascal Fares
+ * @author roygeagea
  */
 public class EchoService implements Runnable {
 
@@ -61,9 +79,8 @@ public class EchoService implements Runnable {
                     System.out.print("\n");
                 }
                 else if (line.equalsIgnoreCase("entrainer")) {
-                    System.out.print("entrainer...");
                     try {
-                        Thread.sleep(3000);
+                        trainingEngine(ic);
                     } catch (InterruptedException ex) {
                          Logger.getLogger(EchoService.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -130,14 +147,14 @@ public class EchoService implements Runnable {
                     System.out.println("Meme couleur");
                     System.out.println("Les deux Cameneons sont de meme couleur: " + primaire.getCouleur().getCouleur());
                 }
+                Thread.sleep(5000);
+                primaire.setEtat(Etat.Available);
+                current.setEtat(Etat.Available);
             }                
         }
         else {
            ic.getWriter().println("Il n y a pas un autre Cameneon a ce maument, Réessayez plus tard");  
         }
-        Thread.sleep(5000);
-        primaire.setEtat(Etat.Available);
-        current.setEtat(Etat.Available);
     }
     
     public void engineHelperAvantMutation(Cameneon primaire, Cameneon secondaire) {
@@ -153,4 +170,24 @@ public class EchoService implements Runnable {
         b.getWriter().println("La couleur apres la mutation est: " + a.getCouleur().getCouleur());
     }
 
+    public void trainingEngine(Cameneon primaire) throws InterruptedException {
+        Cameneon current = ServerTCP.getRandomCameneon(ic, this.listeClients);
+        if (current != null) {
+            if (current.getID() != primaire.getID() && current.getEtat() == Etat.Available) {
+                primaire.setEtat(Etat.Unavailable);
+                current.setEtat(Etat.Unavailable);
+                primaire.getWriter().println("Tu est entrain d'entrainer");
+                current.getWriter().println("Tu as etait choisi pour faire un cour");                
+                Thread.sleep(5000);
+                primaire.getWriter().println("Tu as fini d'entrainer");
+                current.getWriter().println("Le cour a fini");
+                primaire.setEtat(Etat.Available);
+                current.setEtat(Etat.Available);
+            }                
+        }
+        else {
+           ic.getWriter().println("Il n y a pas un autre Cameneon a ce maument, Réessayez plus tard");  
+        }
+    }
+    
 }
