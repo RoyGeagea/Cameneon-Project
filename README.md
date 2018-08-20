@@ -4,4 +4,4 @@ Note: Une couleur aléatoire sera attribuée au client (Cameneon) lors de la cr�
 
 ## Conclusion
 
-This project is available on github under <a href='https://github.com/roygeageaisae/NFP103-Project/blob/master/MIT-LICENSE.txt'>MIT license</a>.
+Ce projet est disponible sur github sous <a href='https://github.com/roygeageaisae/NFP103-Project/blob/master/MIT-LICENSE.txt'>MIT license</a>.
