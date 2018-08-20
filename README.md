@@ -4,5 +4,4 @@ Note: Une couleur aléatoire sera attribuée au client (Cameneon) lors de la cr�
 
 ## Conclusion
 
-This project is available on github <a href='https://github.com/jeromeetienne/microevent.js'>here</a>
-under <a href='https://github.com/jeromeetienne/microevent.js/blob/master/MIT-LICENSE.txt'>MIT license</a>.
+This project is available on github under <a href='https://github.com/jeromeetienne/microevent.js/blob/master/MIT-LICENSE.txt'>MIT license</a>.
