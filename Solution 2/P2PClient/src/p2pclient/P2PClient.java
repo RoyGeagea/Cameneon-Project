@@ -207,7 +207,6 @@ public class P2PClient {
                 if (cmd.equals("demande") && peerServerSocket != null) {
                     this.etat = Etat.demande;
                     this.handleDemandeRequest();
-                    System.out.println("DONE");
                 } 
                 else if (cmd.equals("repondre") && peerServerSocket != null) {
                     this.etat = Etat.repondre;
@@ -222,7 +221,6 @@ public class P2PClient {
                 else {
                     out.println(cmd);
                     response = in.nextLine();
-                    System.out.println(response);
                 }
                 if (response.toUpperCase().equals("EXIT")) {
                     break;
@@ -258,7 +256,7 @@ public class P2PClient {
                 Scanner in = new Scanner(peerSocket.getInputStream());
                 PrintStream out = new PrintStream(peerSocket.getOutputStream());
                 out.println("Playing");
-                System.out.println("Waiting for response from peer...");
+                System.out.println("En attente de réponse de la part de l'autre...");
                 String secondPartyAccept = in.nextLine();
                 if (secondPartyAccept.equalsIgnoreCase("yes")) {
                     etat = Etat.reserved;
@@ -309,7 +307,7 @@ public class P2PClient {
                 Scanner in = new Scanner(peerSocket.getInputStream());
                 PrintStream out = new PrintStream(peerSocket.getOutputStream());
                 out.println("Training");
-                System.out.println("Waiting for response from peer...");
+                System.out.println("En attente de réponse de la part des pairs ...");
                 String secondPartyAccept = in.nextLine();
                 if (secondPartyAccept.equalsIgnoreCase("yes")) {
                     etat = Etat.reserved;
@@ -354,13 +352,10 @@ public class P2PClient {
         @Override
         public void run() {
             try {
-                System.out.println("Peer server waiting for connection");
                 while (true) {
                     Socket client = peerServerSocket.accept();
                     Scanner in = new Scanner(client.getInputStream());
                     PrintStream out = new PrintStream(client.getOutputStream());
-                    System.out.println("Waiting for peer to connect...press any key");
-                    System.out.println("Peer has connected, do you accept chat? type: yes to accept");
                     String toCompare = in.nextLine();
                     if (toCompare.equals("Training")) {
                         String psIn = "";
@@ -377,7 +372,6 @@ public class P2PClient {
                             PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
                             outServer.println("update");
                             outServer.println("reserved");
-                            System.out.println("You've accepted chat request");
 //                          out.println("Peer accepted your chat request");
                             String response = in.nextLine();
                             etat = Etat.Registered;
@@ -407,7 +401,6 @@ public class P2PClient {
                             PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
                             outServer.println("update");
                             outServer.println("reserved");
-                            System.out.println("You've accepted chat request");
 //                          out.println("Peer accepted your chat request");
                             String response = in.nextLine();
                             System.out.println("Tu as la couleur " + couleur.getCouleurInString());
@@ -417,7 +410,6 @@ public class P2PClient {
                             outServer.println("update");
                             outServer.println("Registered");
                             while (!response.equals("leave")) {
-                                System.out.println(response);
                                 response = in.nextLine();
                             }
                             System.out.println(response);
