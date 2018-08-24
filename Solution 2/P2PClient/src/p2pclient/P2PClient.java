@@ -276,12 +276,12 @@ public class P2PClient {
                     outServer.println("Registered");
                     out.println("leave");
                     in.close();
-//                    peerSocket.close();
+                    peerSocket.close();
                 }
                 else {
                     in.close();
                     System.out.println("Aucun veut jouer a ce moment");
-//                    peerSocket.close();
+                    peerSocket.close();
                 }
             } catch (IOException e) {
                 // TODO Auto-generated catch block
@@ -382,7 +382,6 @@ public class P2PClient {
                                 System.out.println(response);
                                 response = in.nextLine();
                             }
-                            System.out.println(response);
                             out.println("leave");
                             in.close();
                         }
@@ -412,7 +411,6 @@ public class P2PClient {
                             while (!response.equals("leave")) {
                                 response = in.nextLine();
                             }
-                            System.out.println(response);
                             out.println("leave");
                             in.close();
                         }
