@@ -201,7 +201,7 @@ public class P2PClient {
             Thread w = new Thread(ps);
             w.start();
             while (true) {
-                mutex.acquire();
+//                mutex.acquire();
                 System.out.println("Enter a command");
                 cmd = userInput.nextLine();
                 if (cmd.equals("demande") && peerServerSocket != null) {
@@ -215,17 +215,15 @@ public class P2PClient {
                     System.out.println("YAMIII");
                 } 
                 else if (cmd.equals("entrainer")) {
-                    System.out.println("J'ai entraine d'entrainer");
                     handleTrainingRequest();
                 }
                 else {
-                    out.println(cmd);
-                    response = in.nextLine();
+                    
                 }
                 if (response.toUpperCase().equals("EXIT")) {
                     break;
                 }
-                mutex.release();
+//                mutex.release();
             }
             in.close();
             out.close();
@@ -239,14 +237,15 @@ public class P2PClient {
         }
     }
     
-    public void connectToPeer() {
+    public void connectToPeer() throws InterruptedException {
         handlePeerConnection();
     }
 
-    public void handlePeerConnection() {
+    public void handlePeerConnection() throws InterruptedException {
         PeerResponsesThread prt = new PeerResponsesThread();
         Thread t = new Thread(prt);
         t.start();
+        t.join();
     }
 
     private class PeerResponsesThread implements Runnable {
@@ -290,14 +289,15 @@ public class P2PClient {
         }
     }
     
-    public void connectToPeerForTraining() {
+    public void connectToPeerForTraining() throws InterruptedException {
         handlePeerConnectionForTraining();
     }
     
-    public void handlePeerConnectionForTraining() {
+    public void handlePeerConnectionForTraining() throws InterruptedException {
         PeerResponsesThreadForTraining prt = new PeerResponsesThreadForTraining();
         Thread t = new Thread(prt);
         t.start();
+        t.join();
     }
     
     private class PeerResponsesThreadForTraining implements Runnable {
@@ -307,7 +307,6 @@ public class P2PClient {
                 Scanner in = new Scanner(peerSocket.getInputStream());
                 PrintStream out = new PrintStream(peerSocket.getOutputStream());
                 out.println("Training");
-                System.out.println("En attente de réponse de la part des pairs ...");
                 String secondPartyAccept = in.nextLine();
                 if (secondPartyAccept.equalsIgnoreCase("yes")) {
                     etat = Etat.reserved;
@@ -353,73 +352,15 @@ public class P2PClient {
         public void run() {
             try {
                 while (true) {
+//                    mutex.acquire();
                     Socket client = peerServerSocket.accept();
-                    Scanner in = new Scanner(client.getInputStream());
-                    PrintStream out = new PrintStream(client.getOutputStream());
-                    String toCompare = in.nextLine();
-                    if (toCompare.equals("Training")) {
-                        String psIn = "";
-                        if (etat == Etat.reserved || etat == Etat.demande || etat == Etat.repondre) {
-                            psIn = "no";
-                            out.println(psIn);
-                            in.close();
-                        } else {
-                            psIn = "yes";
-                            out.println(psIn);
-                            etat = Etat.reserved;
-                            // send to the server that you are reserved
-                            Scanner inServer = new Scanner(getControlSocket().getInputStream());
-                            PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
-                            outServer.println("update");
-                            outServer.println("reserved");
-//                          out.println("Peer accepted your chat request");
-                            String response = in.nextLine();
-                            etat = Etat.Registered;
-                            // send to the server that you are Registered
-                            outServer.println("update");
-                            outServer.println("Registered");
-                            while (!response.equals("leave")) {
-                                System.out.println(response);
-                                response = in.nextLine();
-                            }
-                            out.println("leave");
-                            in.close();
-                        }
-                    } else {
-                        String psIn = "";
-                        if (etat == Etat.reserved || etat == Etat.Registered) {
-                            psIn = "no";
-                            out.println(psIn);
-                            in.close();
-                        } else {
-                            psIn = "yes";
-                            out.println(psIn);
-                            etat = Etat.reserved;
-                            // send to the server that you are reserved
-                            Scanner inServer = new Scanner(getControlSocket().getInputStream());
-                            PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
-                            outServer.println("update");
-                            outServer.println("reserved");
-//                          out.println("Peer accepted your chat request");
-                            String response = in.nextLine();
-                            System.out.println("Tu as la couleur " + couleur.getCouleurInString());
-                            handleColorMutation(Couleur.valueOf(response), couleur, out);
-                            etat = Etat.Registered;
-                            // send to the server that you are Registered
-                            outServer.println("update");
-                            outServer.println("Registered");
-                            while (!response.equals("leave")) {
-                                response = in.nextLine();
-                            }
-                            out.println("leave");
-                            in.close();
-                        }
-                    }
+                    PeerResponse res = new PeerResponse(client);
+                    Thread a = new Thread(res);
+                    a.start();
+//                    mutex.release();
                 }
             } catch (IOException e) {
                 System.out.println(e.getMessage());
-            } catch (InterruptedException ex) {
-                Logger.getLogger(P2PClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -504,8 +445,88 @@ public class P2PClient {
             }
         }
     }
+    
+    private class PeerResponse implements Runnable {
 
-    public void handleDemandeRequest() throws IOException {
+        private Socket client;
+
+        public PeerResponse(Socket client) {
+            this.client = client;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Scanner in = new Scanner(client.getInputStream());
+                PrintStream out = new PrintStream(client.getOutputStream());
+                String toCompare = in.nextLine();
+                if (toCompare.equals("Training")) {
+                    String psIn = "";
+                    if (etat == Etat.reserved || etat == Etat.demande || etat == Etat.repondre) {
+                        psIn = "no";
+                        out.println(psIn);
+                        in.close();
+                    } else {
+                        psIn = "yes";
+                        out.println(psIn);
+                        etat = Etat.reserved;
+                        // send to the server that you are reserved
+                        Scanner inServer = new Scanner(getControlSocket().getInputStream());
+                        PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
+                        outServer.println("update");
+                        outServer.println("reserved");
+                        String response = "";
+                        System.out.println("J'ai été formé");
+                        etat = Etat.Registered;
+                        // send to the server that you are Registered
+                        outServer.println("update");
+                        outServer.println("Registered");
+                        while (!response.equals("leave")) {
+                            response = in.nextLine();
+                        }
+                        out.println("leave");
+                        in.close();
+                    }
+                } else {
+                    String psIn = "";
+                    if (etat == Etat.reserved || etat == Etat.Registered) {
+                        psIn = "no";
+                        out.println(psIn);
+                        in.close();
+                    } else {
+                        psIn = "yes";
+                        out.println(psIn);
+                        etat = Etat.reserved;
+                        // send to the server that you are reserved
+                        Scanner inServer = new Scanner(getControlSocket().getInputStream());
+                        PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
+                        outServer.println("update");
+                        outServer.println("reserved");
+                        // out.println("Peer accepted your chat request");
+                        String response = in.nextLine();
+                        System.out.println("Tu as la couleur " + couleur.getCouleurInString());
+                        handleColorMutation(Couleur.valueOf(response), couleur, out);
+                        etat = Etat.Registered;
+                        // send to the server that you are Registered
+                        outServer.println("update");
+                        outServer.println("Registered");
+                        while (!response.equals("leave")) {
+                            response = in.nextLine();
+                        }
+                        out.println("leave");
+                        in.close();
+                        System.out.println("Enter a command");
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(P2PClient.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(P2PClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public void handleDemandeRequest() throws IOException, InterruptedException {
         if (clients.size() == 0) {
             System.out.println("Il n'ya pas un autre Cameneon a ce moment, réessayez plus tard");
             this.etat = Etat.Registered;
@@ -531,7 +552,7 @@ public class P2PClient {
         }
     }
     
-    public void handleTrainingRequest() throws IOException {
+    public void handleTrainingRequest() throws IOException, InterruptedException {
         if (clients.size() == 0) {
             System.out.println("Il n'ya pas un autre Cameneon a ce moment, réessayez plus tard");
             this.etat = Etat.Registered;
