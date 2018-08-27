@@ -202,7 +202,7 @@ public class P2PClient {
             w.start();
             while (true) {
 //                mutex.acquire();
-                System.out.println("Enter a command");
+                System.out.println("Entrer une commande");
                 cmd = userInput.nextLine();
                 if (cmd.equals("demande") && peerServerSocket != null) {
                     this.etat = Etat.demande;
@@ -278,6 +278,7 @@ public class P2PClient {
                     peerSocket.close();
                 }
                 else {
+                    etat = Etat.Registered;
                     in.close();
                     System.out.println("Aucun veut jouer a ce moment");
                     peerSocket.close();
@@ -324,6 +325,7 @@ public class P2PClient {
                     peerSocket.close();
                 }
                 else {
+                    etat = Etat.Registered;
                     in.close();
                     System.out.println("Aucun veut jouer a ce moment");
                     peerSocket.close();
@@ -352,15 +354,16 @@ public class P2PClient {
         public void run() {
             try {
                 while (true) {
-//                    mutex.acquire();
                     Socket client = peerServerSocket.accept();
                     PeerResponse res = new PeerResponse(client);
                     Thread a = new Thread(res);
                     a.start();
-//                    mutex.release();
+                    a.join();
                 }
             } catch (IOException e) {
                 System.out.println(e.getMessage());
+            } catch (InterruptedException ex) {
+                Logger.getLogger(P2PClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -460,12 +463,14 @@ public class P2PClient {
                 Scanner in = new Scanner(client.getInputStream());
                 PrintStream out = new PrintStream(client.getOutputStream());
                 String toCompare = in.nextLine();
+                mutex.acquire();
                 if (toCompare.equals("Training")) {
                     String psIn = "";
                     if (etat == Etat.reserved || etat == Etat.demande || etat == Etat.repondre) {
                         psIn = "no";
                         out.println(psIn);
                         in.close();
+                        mutex.release();
                     } else {
                         psIn = "yes";
                         out.println(psIn);
@@ -475,6 +480,7 @@ public class P2PClient {
                         PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
                         outServer.println("update");
                         outServer.println("reserved");
+                        mutex.release();
                         String response = "";
                         System.out.println("J'ai été formé");
                         etat = Etat.Registered;
@@ -493,6 +499,7 @@ public class P2PClient {
                         psIn = "no";
                         out.println(psIn);
                         in.close();
+                        mutex.release();
                     } else {
                         psIn = "yes";
                         out.println(psIn);
@@ -502,6 +509,7 @@ public class P2PClient {
                         PrintStream outServer = new PrintStream(getControlSocket().getOutputStream());
                         outServer.println("update");
                         outServer.println("reserved");
+                        mutex.release();
                         // out.println("Peer accepted your chat request");
                         String response = in.nextLine();
                         System.out.println("Tu as la couleur " + couleur.getCouleurInString());
@@ -515,7 +523,7 @@ public class P2PClient {
                         }
                         out.println("leave");
                         in.close();
-                        System.out.println("Enter a command");
+                        System.out.println("Entrer une commande");
                     }
                 }
             } catch (IOException ex) {
